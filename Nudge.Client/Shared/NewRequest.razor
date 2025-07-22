@@ -1,0 +1,97 @@
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject ApiService Api
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Create New Request</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                <label for="url" class="form-label">URL</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="url"
+                    placeholder="https://api.example.com/endpoint"
+                    @bind="_url" @bind:event="oninput"
+                />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="method" class="form-label">Method</label>
+                <select class="form-select" id="method" @bind="_method" @bind:event="oninput">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+            @if (_method == "POST" || _method == "PUT")
+            {
+                <div class="col-md-8 mb-3">
+                    <label for="url" class="form-label">BODY</label>
+                    <textarea
+                        class="form-control"
+                        id="BODY"
+                        rows=6
+                        placeholder="JSON body"
+                        @bind="_body" @bind:event="oninput"
+                    />
+                </div> 
+            }
+        </div>
+
+        <button type="button" class="btn btn-primary" @onclick="CreateRequestHandler">Create Request</button>
+    </div>
+</div>
+
+<br /> _url: @_url
+<br /> _method: @_method
+
+@code
+{
+    private string? _url;
+    private string? _body;
+
+    private string? _method = "GET";
+
+    private async Task CreateRequestHandler(MouseEventArgs _)
+    {
+        switch (_method)
+        {
+            case "GET":
+            case "DELETE":
+                if (_url is null)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "URL is empty!");
+                    return;
+                }
+                await ApiService.CreateRequest(
+                    new Request(
+                        Url: _url,
+                        Method: (_method == "GET" ? HttpMethod.Get : HttpMethod.Delete),
+                        Body: null
+                    )
+                );
+                break;
+            case "POST":
+            case "PUT":
+                if (_url is null || _body is null)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "URL is empty!");
+                    return;
+                }
+                await ApiService.CreateRequest(
+                    new Request(
+                        Url: _url,
+                        Method: (_method == "POST" ? HttpMethod.Post : HttpMethod.Patch),
+                        Body: _body
+                    )
+                );
+                break;
+            default:
+                break;
+        }
+    }
+}
