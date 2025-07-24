@@ -10,12 +10,15 @@ namespace Nudge.Controllers;
 public class RequestManagerController : ControllerBase
 {
     private IRequestRepository _requestRepository;
+    private IHttpClientFactory _httpClientFactory;
 
     public RequestManagerController(
-        IRequestRepository requestRepository
+        IRequestRepository requestRepository,
+        IHttpClientFactory httpClientFactory
     )
     {
         _requestRepository = requestRepository;
+        _httpClientFactory = httpClientFactory;
     }
 
     [HttpGet]
@@ -45,5 +48,31 @@ public class RequestManagerController : ControllerBase
     {
         var deletedId = await _requestRepository.DeleteRequestAsync(id);
         return deletedId;
+    }
+
+    [HttpPost("execute")]
+    public async Task<ActionResult<RequestResponseDto>> ExecuteRequest([FromBody] ExecuteRequestDto executeRequestDto)
+    {
+        var httpClient = _httpClientFactory.CreateClient("NudgeExecutorClient");
+
+        using var requestMsg = new HttpRequestMessage();
+        requestMsg.RequestUri = new Uri(executeRequestDto.Url);
+        requestMsg.Method = new HttpMethod(executeRequestDto.Method);
+        requestMsg.Content = JsonContent.Create(executeRequestDto.Body);
+
+        using var response = await httpClient.SendAsync(requestMsg);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
+        var execResponse = new RequestResponseDto(
+            StatusCode: (int)response.StatusCode,
+            Content: await response.Content.ReadAsStringAsync(),
+            Headers: response.Headers.ToDictionary(h => h.Key, h => string.Join(", ", h.Value))
+        );
+
+        return Ok(execResponse);
     }
 }

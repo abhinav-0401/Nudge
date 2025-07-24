@@ -38,7 +38,7 @@ public class ApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            await _js.InvokeVoidAsync("alert", "No requests to be displayed");
+            await _js.InvokeVoidAsync("alert", "No APIs to be displayed");
             return null;
         }
         var requestList = await response.Content.ReadFromJsonAsync<List<Request>>();
@@ -51,10 +51,25 @@ public class ApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            await _js.InvokeVoidAsync("alert", "No requests to be displayed");
+            await _js.InvokeVoidAsync("alert", "Couldn't delete API");
             return null;
         }
         await _js.InvokeVoidAsync("alert", "Request Deleted Successfully");
         return id;
+    }
+
+    public async Task<RequestResponseDto?> ExecuteRequestAsync(ExecuteRequestDto executeRequestDto)
+    {
+        using var response = await _http.PostAsJsonAsync($"api/request/execute", executeRequestDto);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            await _js.InvokeVoidAsync("alert", "Couldn't execute API request");
+            return null;
+        }
+        await _js.InvokeVoidAsync("alert", "API request executed successfully");
+        var reqResDto = await response.Content.ReadFromJsonAsync<RequestResponseDto>();
+        await _js.InvokeVoidAsync("alert", reqResDto);
+        return reqResDto;
     }
 }

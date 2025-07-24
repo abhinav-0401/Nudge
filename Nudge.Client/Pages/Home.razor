@@ -1,6 +1,6 @@
 @page "/"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
-
+@using Nudge.Client.Dtos;
 @inject ApiService Api
 
 <PageTitle>Nudge - A Simple API Manager</PageTitle>
@@ -30,20 +30,89 @@
                         @if (_requests is not null)
                         {
                             @foreach (var req in _requests)
-                            { 
+                            {
                                 <tr>
                                     <td><span class="badge bg-warning text-dark">@req.Method</span></td>
-                                    <td>@req.Url</td>
                                     <td>
-                                        <button class="btn btn-success btn-sm me-2">Execute</button>
-                                        <button
-                                            class="btn btn-danger btn-sm"
-                                            @onclick="(MouseEventArgs _) => DeleteRequestHandler(req.RequestId)"
-                                        >
+                                        @req.Url
+                                        @if (!string.IsNullOrEmpty(req.Body))
+                                        {
+                                            <br />
+                                            <button class="btn btn-link btn-sm p-0 text-decoration-none"
+                                                @onclick="() => ToggleBodyVisibility(req.RequestId)">
+                                                <small>@(_showBody.Contains(req.RequestId) ? "Hide" : "Show") Body</small>
+                                            </button>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm me-2"
+                                            @onclick="(MouseEventArgs _) => ExecuteRequestHandler(req)">
+                                            Execute
+                                        </button>
+                                        <button class="btn btn-danger btn-sm"
+                                            @onclick="(MouseEventArgs _) => DeleteRequestHandler(req.RequestId)">
                                             Delete
                                         </button>
+                                        @if (_responses.ContainsKey(req.RequestId))
+                                        {
+                                            <br />
+                                            <button class="btn btn-link btn-sm p-0 text-decoration-none mt-1"
+                                                @onclick="() => ToggleResponseVisibility(req.RequestId)">
+                                                <small>@(_showResponse.Contains(req.RequestId) ? "Hide" : "Show") Response</small>
+                                            </button>
+                                        }
                                     </td>
                                 </tr>
+
+                                <!-- Request Body Row -->
+                                @if (!string.IsNullOrEmpty(req.Body) && _showBody.Contains(req.RequestId))
+                                {
+                                    <tr class="table-secondary">
+                                        <td colspan="3">
+                                            <strong>Request Body:</strong>
+                                            <pre class="mt-2 mb-0 bg-light p-2 rounded"><code>@req.Body</code></pre>
+                                        </td>
+                                    </tr>
+                                }
+
+                                <!-- Response Row -->
+                                @if (_responses.ContainsKey(req.RequestId) && _showResponse.Contains(req.RequestId))
+                                {
+                                    var response = _responses[req.RequestId];
+                                    <tr class="table-info">
+                                        <td colspan="3">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <strong>Status Code:</strong>
+                                                    <span
+                                                        class="badge @GetStatusBadgeClass(response.StatusCode)">@response.StatusCode</span>
+
+                                                    @if (response.Headers.Any())
+                                                    {
+                                                        <div class="mt-2">
+                                                            <strong>Headers:</strong>
+                                                            @foreach (var header in response.Headers)
+                                                            {
+                                                                <div><small><strong>@header.Key:</strong> @header.Value</small></div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Response Content:</strong>
+                                                    @if (!string.IsNullOrEmpty(response.Content))
+                                                    {
+                                                        <pre class="mt-2 mb-0 bg-light p-2 rounded"><code>@response.Content</code></pre>
+                                                    }
+                                                    else
+                                                    {
+                                                        <p class="text-muted mt-2 mb-0"><em>No content</em></p>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
                             }
                         }
                     </tbody>
@@ -56,6 +125,9 @@
 @code
 {
     private List<Request>? _requests;
+    private Dictionary<int, RequestResponseDto> _responses = new();
+    private HashSet<int> _showBody = new();
+    private HashSet<int> _showResponse = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,6 +142,60 @@
     private async Task DeleteRequestHandler(int id)
     {
         await Api.DeleteRequestAsync(id);
+        _responses.Remove(id);
+        _showBody.Remove(id);
+        _showResponse.Remove(id);
         await GetAllRequests();
+    }
+
+    private async Task ExecuteRequestHandler(Request request)
+    {
+        var executeRequestDto = new ExecuteRequestDto(
+            Url: request.Url,
+            Method: request.Method,
+            Body: request.Body
+        );
+
+        var response = await Api.ExecuteRequestAsync(executeRequestDto);
+        if (response != null)
+        {
+            _responses[request.RequestId] = response;
+        }
+    }
+
+    private void ToggleBodyVisibility(int requestId)
+    {
+        if (_showBody.Contains(requestId))
+        {
+            _showBody.Remove(requestId);
+        }
+        else
+        {
+            _showBody.Add(requestId);
+        }
+    }
+
+    private void ToggleResponseVisibility(int requestId)
+    {
+        if (_showResponse.Contains(requestId))
+        {
+            _showResponse.Remove(requestId);
+        }
+        else
+        {
+            _showResponse.Add(requestId);
+        }
+    }
+
+    private string GetStatusBadgeClass(int statusCode)
+    {
+        return statusCode switch
+        {
+            >= 200 and < 300 => "bg-success",
+            >= 300 and < 400 => "bg-info",
+            >= 400 and < 500 => "bg-warning text-dark",
+            >= 500 => "bg-danger",
+            _ => "bg-secondary"
+        };
     }
 }
