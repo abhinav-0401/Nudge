@@ -1,3 +1,4 @@
+@using Nudge.Client.Dtos
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject ApiService Api
@@ -46,9 +47,6 @@
     </div>
 </div>
 
-<br /> _url: @_url
-<br /> _method: @_method
-
 @code
 {
     private string? _url;
@@ -67,13 +65,7 @@
                     await JSRuntime.InvokeVoidAsync("alert", "URL is empty!");
                     return;
                 }
-                await ApiService.CreateRequest(
-                    new Request(
-                        Url: _url,
-                        Method: (_method == "GET" ? HttpMethod.Get : HttpMethod.Delete),
-                        Body: null
-                    )
-                );
+                await Api.CreateRequestAsync(new CreateRequestDto(Url: _url, Method: _method, Body: null));
                 break;
             case "POST":
             case "PUT":
@@ -82,13 +74,7 @@
                     await JSRuntime.InvokeVoidAsync("alert", "URL is empty!");
                     return;
                 }
-                await ApiService.CreateRequest(
-                    new Request(
-                        Url: _url,
-                        Method: (_method == "POST" ? HttpMethod.Post : HttpMethod.Patch),
-                        Body: _body
-                    )
-                );
+                await Api.CreateRequestAsync(new CreateRequestDto(Url: _url, Method: _method, Body: _body));
                 break;
             default:
                 break;

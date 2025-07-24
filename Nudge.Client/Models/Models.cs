@@ -2,7 +2,8 @@ namespace Nudge.Client.Models;
 
 public record Request
 (
+    int RequestId,
     string Url,
-    HttpMethod Method,
+    string Method,
     string? Body
 );

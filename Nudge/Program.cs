@@ -1,11 +1,16 @@
 using Nudge.Client.Pages;
 using Nudge.Components;
+using Nudge.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddControllers();
+
+builder.Services.AddScoped<IRequestRepository, DapperRequestRepository>();
 
 var app = builder.Build();
 
@@ -30,5 +35,7 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Nudge.Client._Imports).Assembly);
+
+app.MapControllers();
 
 app.Run();

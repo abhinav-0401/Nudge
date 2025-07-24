@@ -1,6 +1,8 @@
 @page "/"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
+@inject ApiService Api
+
 <PageTitle>Nudge - A Simple API Manager</PageTitle>
 
 <div class="container mt-4">
@@ -25,33 +27,49 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><span class="badge bg-primary">GET</span></td>
-                            <td>https://api.example.com/users</td>
-                            <td>
-                                <button class="btn btn-success btn-sm me-2">Execute</button>
-                                <button class="btn btn-danger btn-sm">Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-success">POST</span></td>
-                            <td>https://api.example.com/posts</td>
-                            <td>
-                                <button class="btn btn-success btn-sm me-2">Execute</button>
-                                <button class="btn btn-danger btn-sm">Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-warning text-dark">PUT</span></td>
-                            <td>https://api.example.com/users/1</td>
-                            <td>
-                                <button class="btn btn-success btn-sm me-2">Execute</button>
-                                <button class="btn btn-danger btn-sm">Delete</button>
-                            </td>
-                        </tr>
+                        @if (_requests is not null)
+                        {
+                            @foreach (var req in _requests)
+                            { 
+                                <tr>
+                                    <td><span class="badge bg-warning text-dark">@req.Method</span></td>
+                                    <td>@req.Url</td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm me-2">Execute</button>
+                                        <button
+                                            class="btn btn-danger btn-sm"
+                                            @onclick="(MouseEventArgs _) => DeleteRequestHandler(req.RequestId)"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
+@code
+{
+    private List<Request>? _requests;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllRequests();
+    }
+
+    private async Task GetAllRequests()
+    {
+        _requests = await Api.GetAllRequestsAsync();
+    }
+
+    private async Task DeleteRequestHandler(int id)
+    {
+        await Api.DeleteRequestAsync(id);
+        await GetAllRequests();
+    }
+}
