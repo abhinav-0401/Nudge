@@ -1,8 +1,8 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.JSInterop;
-using Nudge.Client.Dtos;
-using Nudge.Client.Models;
+using Nudge.Lib.Dtos;
+using Nudge.Lib.Models;
 
 namespace Nudge.Client.Services;
 

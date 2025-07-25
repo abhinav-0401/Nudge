@@ -1,4 +1,4 @@
-namespace Nudge.Dtos;
+namespace Nudge.Lib.Dtos;
 
 public record UpdateRequestDto(
     string Url,

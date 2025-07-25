@@ -1,7 +1,6 @@
-namespace Nudge.Client.Models;
+namespace Nudge.Lib.Models;
 
-public record Request
-(
+public record Request(
     int RequestId,
     string Url,
     string Method,

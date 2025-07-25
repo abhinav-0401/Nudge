@@ -1,16 +1,17 @@
 using Microsoft.Data.SqlClient;
 using Dapper;
-using Nudge.Models;
-using Nudge.Dtos;
+using Nudge.Lib.Models;
+using Nudge.Lib.Dtos;
 
 namespace Nudge.Repositories;
 
 public class DapperRequestRepository : IRequestRepository
 {
-    private string _connectionString = "";
+    private IConfiguration _configuration;
 
-    public DapperRequestRepository()
+    public DapperRequestRepository(IConfiguration configuration)
     {
+        _configuration = configuration;
     }
 
     public async Task<bool> CreateRequestAsync(CreateRequestDto createRequestDto)
@@ -23,7 +24,7 @@ public class DapperRequestRepository : IRequestRepository
         """;
         try
         {
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = new SqlConnection(_configuration["AzureSqlNudge"] ?? "");
             await connection.ExecuteAsync(query, createRequestDto);
             return true;
         }
@@ -41,7 +42,7 @@ public class DapperRequestRepository : IRequestRepository
 
     public async Task<int?> DeleteRequestAsync(int id)
     {
-        using var connection = new SqlConnection(_connectionString);
+        using var connection = new SqlConnection(_configuration["AzureSqlNudge"] ?? "");
         const string query =
             """
                 DELETE FROM requests
@@ -62,7 +63,7 @@ public class DapperRequestRepository : IRequestRepository
 
     public async Task<List<Request>?> GetAllRequestsAsync()
     {
-        using var connection = new SqlConnection(_connectionString);
+        using var connection = new SqlConnection(_configuration["AzureSqlNudge"] ?? "");
         const string query =
             """
                 SELECT
@@ -86,7 +87,7 @@ public class DapperRequestRepository : IRequestRepository
 
     public async Task<Request?> GetRequestAsync(int id)
     {
-        using var connection = new SqlConnection(_connectionString);
+        using var connection = new SqlConnection(_configuration["AzureSqlNudge"] ?? "");
         const string query =
             """
                 SELECT

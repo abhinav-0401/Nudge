@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Nudge.Models;
-using Nudge.Dtos;
+using Nudge.Lib.Models;
+using Nudge.Lib.Dtos;
 using Nudge.Repositories;
 
 namespace Nudge.Controllers;
