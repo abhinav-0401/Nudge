@@ -1,6 +1,9 @@
 # Nudge
 
-> **Minimal API client.** A clean, cross-platform request tester built with **Blazor WebAssembly** and **ASP.NET Core**.
+> **Minimal API client.** A clean, minimal online request tester built with **Blazor WebAssembly** and **ASP.NET Core**, with support for Collections.
+
+> [!IMPORTANT]
+> NUDGE just released *Collections*, a way to group your APIs into folders for better organizations. It's still early, but we're excited for you to try it!
 
 ## Table of Contents
 
@@ -17,12 +20,13 @@
 
 ## Features
 
-| Status | Feature                                           |
-|--------|---------------------------------------------------|
-| ✅     | **Compose requests:** Set method, URL, and body    |
-| ✅     | **Displays response:** Status, headers, content    |
-| ✅     | **Shared Library:** DTOs and Models in `Nudge.Lib` |
-| ✅     | **Responsive layout:** Mobile and desktop support  |
+| Status | Feature                                                                    |
+|--------|----------------------------------------------------------------------------|
+| ✅     | **Compose requests:** Set method, URL, and body                            |
+| ✅     | **Organise into Collections:** Organise your API requests into collections |
+| ✅     | **Displays response:** Status, headers, content                            |
+| ✅     | **Shared Library:** DTOs and Models in `Nudge.Lib`                         |
+| ✅     | **Responsive layout:** Mobile and desktop support                          |
 
 ---
 
@@ -64,13 +68,13 @@ Nudge/
 ├── Nudge.Client/                # Blazor WASM frontend
 │   ├── Pages/                  # Main Razor pages (e.g. Home.razor)
 │   ├── Services/               # HttpClient logic (ApiService)
-│   ├── Shared/                 # Shared UI components (e.g. NewRequest)
+│   ├── Shared/                 # Shared UI components (e.g. NewRequest, NewCollection)
 │   ├── Program.cs              # WASM bootstrapping
 │   └── wwwroot/                # Static assets & settings
 
 ├── Nudge/                       # ASP.NET Core backend
-│   ├── Controllers/            # API proxy logic (RequestManagerController)
-│   ├── Repositories/           # Repository Interfaces and Implementations (IRequestRepository, Dapper-based Implementation)
+│   ├── Controllers/            # API proxy logic (RequestManagerController, CollectionManagerController)
+│   ├── Repositories/           # Repository Interfaces and Implementations (IRequestRepository, ICollectionRepository, Dapper-based Implementations)
 │   ├── Components/             # Razor layout & routing (App.razor etc.)
 │   └── Program.cs              # API startup & configuration
 
