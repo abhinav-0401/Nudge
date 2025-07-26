@@ -4,5 +4,6 @@ public record Request(
     int RequestId,
     string Url,
     string Method,
-    string? Body
+    string? Body,
+    int CollectionId
 );

@@ -11,6 +11,8 @@ builder.Services.AddRazorComponents()
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IRequestRepository, DapperRequestRepository>();
+builder.Services.AddScoped<ICollectionRepository, DapperCollectionRepository>();
+
 builder.Services.AddHttpClient("NudgeExecutorClient");
 
 var app = builder.Build();

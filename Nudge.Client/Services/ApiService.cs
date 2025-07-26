@@ -45,17 +45,16 @@ public class ApiService
         return requestList;
     }
 
-    public async Task<int?> DeleteRequestAsync(int id)
+    public async Task DeleteRequestAsync(int id)
     {
         using var response = await _http.DeleteAsync($"api/request/{id}");
 
         if (!response.IsSuccessStatusCode)
         {
             await _js.InvokeVoidAsync("alert", "Couldn't delete API");
-            return null;
+            return;
         }
         await _js.InvokeVoidAsync("alert", "Request Deleted Successfully");
-        return id;
     }
 
     public async Task<RequestResponseDto?> ExecuteRequestAsync(ExecuteRequestDto executeRequestDto)
@@ -71,5 +70,43 @@ public class ApiService
         var reqResDto = await response.Content.ReadFromJsonAsync<RequestResponseDto>();
         await _js.InvokeVoidAsync("alert", reqResDto);
         return reqResDto;
+    }
+
+    public async Task<Collection?> GetCollectionAsync(int id = 1)
+    {
+        using var response = await _http.GetAsync($"api/collection/{id}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            await _js.InvokeVoidAsync("alert", "No API Collection to be displayed");
+            return null;
+        }
+        var collection = await response.Content.ReadFromJsonAsync<Collection>();
+        return collection;
+    }
+
+    public async Task CreateCollectionAsync(string name)
+    {
+        using var response = await _http.PostAsJsonAsync(
+            "api/collection",
+            new CreateCollectionDto(name)
+        );
+
+        if (!response.IsSuccessStatusCode)
+        {
+            await _js.InvokeVoidAsync("alert", "Couldn't create new collection");
+            return;
+        }
+    }
+
+    public async Task DeleteCollectionAsync(int id)
+    {
+        using var response = await _http.DeleteAsync($"api/collection/{id}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            await _js.InvokeVoidAsync("alert", "Couldn't delete collection");
+            return;
+        }
     }
 }

@@ -44,10 +44,14 @@ public class RequestManagerController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<ActionResult<int?>> DeleteRequest(int id)
+    public async Task<IActionResult> DeleteRequest(int id)
     {
         var deletedId = await _requestRepository.DeleteRequestAsync(id);
-        return deletedId;
+        if (deletedId is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+        return Ok();
     }
 
     [HttpPost("execute")]

@@ -1,26 +1,37 @@
 @page "/"
-@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
-@using Nudge.Lib.Dtos;
-@inject ApiService Api
+@page "/collection/{Id:int}"
 
-<PageTitle>Nudge - A Simple API Manager</PageTitle>
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+@using Nudge.Lib.Dtos;
+@using Nudge.Lib.Models
+@inject ApiService Api
+@inject NavigationManager Navigation
+
+<PageTitle>Collections</PageTitle>
 
 <div class="container mt-4">
     <h2 class="mb-4">API Request Manager</h2>
 
+    <NewCollection CollectionId=@(_collection?.CollectionId ?? 1) />
+
     <!-- Create New Request Form -->
-    <NewRequest />
+    <NewRequest CollectionId=@(_collection?.CollectionId ?? 1) />
 
     <!-- Requests List -->
     <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex flex-row justify-content-between">
             <h5 class="mb-0">Saved Requests</h5>
+            <button class="btn btn-danger btn-sm" @onclick="DeleteCollectionHandler">
+                Delete This Collection
+            </button>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>Collection</th>
                             <th>Method</th>
                             <th>URL</th>
                             <th>Actions</th>
@@ -32,6 +43,11 @@
                             @foreach (var req in _requests)
                             {
                                 <tr>
+                                    <td>
+                                        <span class="badge bg-info text-dark">
+                                            @(_collection?.CollectionId == 1 ? "Default" : _collection?.Name)
+                                        </span>
+                                    </td>
                                     <td><span class="badge bg-warning text-dark">@req.Method</span></td>
                                     <td>
                                         @req.Url
@@ -124,6 +140,9 @@
 
 @code
 {
+    [Parameter]
+    public int? Id { get; set; }
+    private Collection? _collection = default;
     private List<Request>? _requests;
     private Dictionary<int, RequestResponseDto> _responses = new();
     private HashSet<int> _showBody = new();
@@ -131,12 +150,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await GetAllRequests();
-    }
-
-    private async Task GetAllRequests()
-    {
-        _requests = await Api.GetAllRequestsAsync();
+        _collection = await Api.GetCollectionAsync(Id ?? 1);
+        _requests = _collection?.Requests;
     }
 
     private async Task DeleteRequestHandler(int id)
@@ -145,7 +160,7 @@
         _responses.Remove(id);
         _showBody.Remove(id);
         _showResponse.Remove(id);
-        await GetAllRequests();
+        Navigation.NavigateTo($"/collection/{Id ?? 1}", forceLoad: true);
     }
 
     private async Task ExecuteRequestHandler(Request request)
@@ -161,6 +176,12 @@
         {
             _responses[request.RequestId] = response;
         }
+    }
+
+    private async Task DeleteCollectionHandler()
+    {
+        await Api.DeleteCollectionAsync(Id ?? 1);
+        Navigation.NavigateTo("/", forceLoad: true);
     }
 
     private void ToggleBodyVisibility(int requestId)

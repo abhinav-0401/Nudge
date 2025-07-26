@@ -16,11 +16,10 @@ public class DapperRequestRepository : IRequestRepository
 
     public async Task<bool> CreateRequestAsync(CreateRequestDto createRequestDto)
     {
-        Console.WriteLine("in here");
         const string query =
         """
-            INSERT INTO requests (url, method, body) 
-            VALUES (@Url, @Method, @Body)
+            INSERT INTO requests (url, method, body, collection_id) 
+            VALUES (@Url, @Method, @Body, @CollectionId)
         """;
         try
         {
@@ -70,7 +69,8 @@ public class DapperRequestRepository : IRequestRepository
                     request_id AS RequestId,
                     url AS Url,
                     method AS Method,
-                    body AS Body
+                    body AS Body,
+                    collection_id AS CollectionId
                 FROM requests
             """;
         try
@@ -94,7 +94,8 @@ public class DapperRequestRepository : IRequestRepository
                     request_id AS RequestId,
                     url AS Url,
                     method AS Method,
-                    body AS Body
+                    body AS Body,
+                    collection_id AS CollectionId
                 FROM requests
                 WHERE request_id = @id
             """;

@@ -1,6 +1,7 @@
 @using Nudge.Lib.Dtos
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
 @inject ApiService Api
 
 <div class="card mb-4">
@@ -49,6 +50,9 @@
 
 @code
 {
+    [Parameter]
+    public int CollectionId { get; set; }
+
     private string? _url;
     private string? _body;
 
@@ -65,7 +69,10 @@
                     await JSRuntime.InvokeVoidAsync("alert", "URL is empty!");
                     return;
                 }
-                await Api.CreateRequestAsync(new CreateRequestDto(Url: _url, Method: _method, Body: null));
+                await Api.CreateRequestAsync(
+                    new CreateRequestDto(Url: _url, Method: _method, Body: null, CollectionId: CollectionId)
+                );
+                Navigation.NavigateTo($"/collection/{CollectionId}", forceLoad: true);
                 break;
             case "POST":
             case "PUT":
@@ -74,7 +81,10 @@
                     await JSRuntime.InvokeVoidAsync("alert", "URL is empty!");
                     return;
                 }
-                await Api.CreateRequestAsync(new CreateRequestDto(Url: _url, Method: _method, Body: _body));
+                await Api.CreateRequestAsync(
+                    new CreateRequestDto(Url: _url, Method: _method, Body: _body, CollectionId: CollectionId)
+                );
+                Navigation.NavigateTo($"/collection/{CollectionId}", forceLoad: true);
                 break;
             default:
                 break;

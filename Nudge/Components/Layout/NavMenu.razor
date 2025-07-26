@@ -1,4 +1,9 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using Nudge.Lib.Models
+
+@using Nudge.Repositories
+@inject ICollectionRepository DapperCollectionRepository
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Nudge</a>
     </div>
@@ -9,10 +14,39 @@
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link" href=@($"/") Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Default
             </NavLink>
         </div>
+
+        @if (_collections is not null)
+        {
+            @foreach (var collection in _collections)
+            {
+                @if (collection.CollectionId != 1)
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href=@($"/collection/{collection.CollectionId}") Match="NavLinkMatch.Prefix">
+                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> @collection.Name
+                        </NavLink>
+                    </div>
+                }
+            }
+        }
     </nav>
 </div>
 
+@code
+{
+    private List<Collection>? _collections = default;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _collections = await DapperCollectionRepository.GetAllCollectionsAsync();
+    }
+
+    private void CreateCollectionHandler()
+    {
+
+    }
+}
